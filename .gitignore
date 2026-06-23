@@ -1,0 +1,14 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Unity project dirs (in case the package is opened/tested inside a project)
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# NOTE: do NOT ignore *.meta — Unity needs them committed for stable GUIDs.
