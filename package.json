@@ -1,8 +1,8 @@
 {
   "name": "com.unlocksfx.sfx",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "UnlockSFX",
-  "description": "Generate game-ready sound effects from a text prompt, right inside the Unity Editor. Clips import straight into your project. Requires a free UnlockSFX account and credits (unlocksfx.com).",
+  "description": "Generate game-ready sound effects from a text prompt, right inside the Unity Editor. Single clips or variation banks import straight into your project. Requires a free UnlockSFX account and credits (unlocksfx.com).",
   "unity": "2021.3",
   "keywords": ["audio", "sfx", "sound effects", "ai", "editor", "tools"],
   "author": {

@@ -10,8 +10,19 @@ namespace UnlockSfx
     {
         const string ApiKeyPref = "UnlockSFX.ApiKey";
         const string SaveFolderPref = "UnlockSFX.SaveFolder";
+        const string LightThemePref = "UnlockSFX.LightTheme";
 
         public const string DefaultSaveFolder = "Assets/SFX";
+
+        /// <summary>True once the user has explicitly chosen a theme.</summary>
+        public static bool HasTheme => EditorPrefs.HasKey(LightThemePref);
+
+        /// <summary>Light vs dark panel theme (defaults to dark until the user picks).</summary>
+        public static bool LightTheme
+        {
+            get { return EditorPrefs.GetBool(LightThemePref, false); }
+            set { EditorPrefs.SetBool(LightThemePref, value); }
+        }
 
         public static string ApiKey
         {

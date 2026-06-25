@@ -1,4 +1,4 @@
-# UnlockSFX — Unity package (Unity 2021.3+)
+# UnlockSFX — Unity package (Unity 2021.3 LTS+)
 
 Generate game-ready sound effects from a text prompt, right inside the Unity
 Editor. Describe a sound and a clean, imported `AudioClip` drops straight into
@@ -39,9 +39,19 @@ project's `Packages/` (or drop `Editor/` anywhere under `Assets/`).
   folder as an `AudioClip`, and selected in the Project window.
 - **Right-click a folder** in the Project window → **UnlockSFX: Generate here…** —
   opens the panel pointed at that folder.
+- **Variants 1** → a single clip. **Variants 2–8** → a variation bank: N clips in a
+  subfolder plus a `<name>.prefab` carrying an **UnlockSFX Random Player** component
+  (clips pre-assigned, no-repeat + pitch variance). Drop the prefab into a scene and
+  call `Play()` for instant non-repeating playback.
+- **Loop** → generates a seamless clip (no audible start/end) for ambience and beds.
+- **Listen** → preview the generated clip without entering Play mode.
+- **Cleared to ship** → after a generate, the panel shows the license rights and a
+  one-click **Copy Steam AI disclosure** button. A hidden `.<name>.unlocksfx.json`
+  sidecar is written next to each clip recording the prompt, license, and that it's
+  AI-generated.
 
-Pricing: 1 credit per 5 seconds (≤5s = 1, ≤10s = 2, …). You get free credits to
-start.
+Pricing: 1 credit per 5 seconds (≤5s = 1, ≤10s = 2, …); banks get ~25% off and only
+charge for clips that succeed. You get free credits to start.
 
 ## License
 
@@ -58,7 +68,7 @@ snippet.
 
 ## Requirements
 
-- Unity **2021.3 LTS** or newer
+- Unity **2021.3 LTS** or newer (compile-verified on 2021.3.45f2 and 6000.5)
 - A free UnlockSFX account + credits
 - Internet access (the editor calls `https://www.unlocksfx.com/api/v1`)
 

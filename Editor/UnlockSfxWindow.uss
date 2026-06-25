@@ -1,0 +1,196 @@
+/* UnlockSFX editor panel — brand styling (matches unlocksfx.com).
+   Colors come from theme variables so one class flip (.usfx-light) reskins
+   the whole panel. Teal/purple/amber accents are shared across both themes. */
+
+.usfx-root {
+    /* dark theme (default) */
+    --bg: #120e26;
+    --surface: #1d1742;
+    --surface-hover: #271f56;
+    --inset: #15102f;
+    --line: #3b3270;
+    --line-hover: #4a3f86;
+    --ink: #f4f1ff;
+    --muted: #b3a8e0;
+
+    /* shared accents */
+    --teal: #16d0a3;
+    --teal-hover: #36d9b1;
+    --teal-active: #12b690;
+    --teal-fg: #06241b;
+    --primary: #7c5cff;
+    --amber: #e0a92e;
+    --amber-hover: #ecb944;
+    --amber-fg: #3a2a04;
+    --pink: #d4537e;
+
+    flex-grow: 1;
+    background-color: var(--bg);
+}
+
+.usfx-light {
+    --bg: #faf7ff;
+    --surface: #ffffff;
+    --surface-hover: #f1ecff;
+    --inset: #f1ecff;
+    --line: #ddd5f2;
+    --line-hover: #cfc4ee;
+    --ink: #1b1340;
+    --muted: #6b6394;
+}
+
+.usfx-scroll { flex-grow: 1; padding: 14px; }
+
+/* --- type --- */
+.usfx-title { color: var(--teal); font-size: 17px; -unity-font-style: bold; }
+.usfx-subtitle { color: var(--muted); font-size: 11px; white-space: normal; margin-bottom: 10px; }
+.usfx-section { color: var(--ink); font-size: 12px; -unity-font-style: bold; margin-bottom: 6px; }
+.usfx-label { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+.usfx-note { color: var(--muted); font-size: 11px; white-space: normal; margin-top: 6px; }
+.usfx-hint { color: var(--muted); font-size: 11px; white-space: normal; }
+
+/* --- layout --- */
+.usfx-card {
+    background-color: var(--surface);
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: var(--line);
+    padding: 12px;
+    margin-bottom: 12px;
+}
+.usfx-row { flex-direction: row; align-items: center; }
+.usfx-spacer { flex-grow: 1; }
+.usfx-rule { height: 1px; background-color: var(--line); margin-top: 8px; margin-bottom: 8px; }
+
+/* --- inputs --- */
+.usfx-root .unity-base-field__label { color: var(--muted); font-size: 11px; }
+.usfx-root .unity-base-text-field__input {
+    background-color: var(--inset);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: var(--line);
+    color: var(--ink);
+    padding: 6px 8px;
+}
+.usfx-root .unity-base-text-field__input:focus { border-color: var(--primary); }
+.usfx-prompt .unity-base-text-field__input { min-height: 58px; white-space: normal; }
+
+/* sliders */
+.usfx-root .unity-base-slider__tracker {
+    background-color: var(--inset);
+    border-radius: 3px;
+    border-width: 0;
+}
+.usfx-root .unity-base-slider__dragger {
+    background-color: var(--teal);
+    border-radius: 7px;
+    border-width: 0;
+    width: 14px;
+    height: 14px;
+}
+.usfx-value { color: var(--ink); font-size: 11px; -unity-font-style: bold; min-width: 34px; -unity-text-align: middle-right; }
+
+/* toggle (custom — dark box, teal check mark) */
+.usfx-toggle-row { flex-direction: row; align-items: center; }
+.usfx-toggle-label { color: var(--ink); font-size: 12px; }
+.usfx-check {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    background-color: var(--inset);
+    border-width: 1px;
+    border-color: var(--line);
+    border-radius: 5px;
+    align-items: center;
+    justify-content: center;
+}
+.usfx-check--on { border-color: var(--teal); }
+.usfx-check-mark {
+    font-size: 13px;
+    -unity-font-style: bold;
+    color: var(--teal);
+    display: none;
+}
+.usfx-check--on .usfx-check-mark { display: flex; }
+
+/* --- buttons --- */
+.usfx-btn-primary {
+    background-color: var(--teal);
+    color: var(--teal-fg);
+    -unity-font-style: bold;
+    font-size: 13px;
+    border-radius: 10px;
+    border-width: 0;
+    padding: 11px 12px;
+    margin-top: 2px;
+    -unity-text-align: middle-center;
+}
+.usfx-btn-primary:hover { background-color: var(--teal-hover); }
+.usfx-btn-primary:active { background-color: var(--teal-active); }
+
+.usfx-btn-warn {
+    background-color: var(--amber);
+    color: var(--amber-fg);
+    -unity-font-style: bold;
+    font-size: 13px;
+    border-radius: 10px;
+    border-width: 0;
+    padding: 11px 12px;
+    margin-top: 2px;
+    -unity-text-align: middle-center;
+}
+.usfx-btn-warn:hover { background-color: var(--amber-hover); }
+
+.usfx-btn-ghost {
+    background-color: var(--surface);
+    color: var(--ink);
+    font-size: 11px;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: var(--line);
+    padding: 5px 10px;
+    -unity-text-align: middle-center;
+}
+.usfx-btn-ghost:hover { background-color: var(--surface-hover); border-color: var(--line-hover); }
+.usfx-theme-btn { min-width: 56px; }
+
+/* segmented MP3 / WAV */
+.usfx-seg { flex-direction: row; }
+.usfx-seg-btn {
+    flex-grow: 1;
+    background-color: var(--inset);
+    color: var(--muted);
+    font-size: 12px;
+    border-width: 1px;
+    border-color: var(--line);
+    padding: 6px;
+    -unity-text-align: middle-center;
+}
+.usfx-seg-btn--first { border-radius: 8px 0 0 8px; }
+.usfx-seg-btn--last { border-radius: 0 8px 8px 0; }
+.usfx-seg-btn--active { background-color: var(--primary); color: #ffffff; border-color: var(--primary); }
+
+/* connected badge + credits */
+.usfx-badge {
+    background-color: rgba(22, 208, 163, 0.14);
+    color: var(--teal);
+    font-size: 11px;
+    border-radius: 999px;
+    border-width: 1px;
+    border-color: rgba(22, 208, 163, 0.4);
+    padding: 2px 10px;
+}
+.usfx-credits-num { color: var(--ink); font-size: 18px; -unity-font-style: bold; }
+.usfx-credits-word { color: var(--muted); font-size: 12px; margin-left: 4px; }
+
+/* pills */
+.usfx-pills { flex-direction: row; flex-wrap: wrap; margin-top: 4px; margin-bottom: 6px; }
+.usfx-pill { font-size: 10px; border-radius: 999px; padding: 2px 9px; margin-right: 5px; margin-bottom: 4px; }
+.usfx-pill-teal { background-color: rgba(22, 208, 163, 0.16); color: var(--teal); }
+.usfx-pill-amber { background-color: rgba(224, 169, 46, 0.20); color: var(--amber); }
+.usfx-pill-pink { background-color: rgba(212, 83, 126, 0.16); color: var(--pink); }
+
+/* status */
+.usfx-status { border-radius: 8px; padding: 8px 10px; margin-top: 8px; white-space: normal; font-size: 11px; }
+.usfx-status-info { background-color: rgba(22, 208, 163, 0.12); color: var(--teal); }
+.usfx-status-error { background-color: rgba(212, 83, 126, 0.14); color: var(--pink); }

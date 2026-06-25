@@ -9,7 +9,6 @@ namespace UnlockSfx
     public class GenerateRequest
     {
         public string originalPrompt;
-        public string category;
         public float durationSeconds;
         public bool loopable;
         public string outputFormat; // "mp3" | "wav"
@@ -24,6 +23,36 @@ namespace UnlockSfx
         public string format;
         public string downloadUrl;
         public int creditsRemaining;
+    }
+
+    [Serializable]
+    public class BankRequest
+    {
+        public string originalPrompt;
+        public float durationSeconds;
+        public bool loopable;
+        public string outputFormat; // "mp3" | "wav"
+        public float promptInfluence;
+        public int count; // 2–8 variants
+    }
+
+    [Serializable]
+    public class BankClip
+    {
+        public string id;
+        public string title;
+        public string format;
+        public string downloadUrl;
+    }
+
+    [Serializable]
+    public class BankResponse
+    {
+        public string bankName;
+        public int count;
+        public int creditsCharged;
+        public int creditsRemaining;
+        public BankClip[] clips;
     }
 
     [Serializable]
@@ -66,26 +95,11 @@ namespace UnlockSfx
             }
 
             var json = JsonUtility.ToJson(request);
-            var post = new UnityWebRequest(ApiBase + "/generate", "POST");
-            post.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
-            post.downloadHandler = new DownloadHandlerBuffer();
-            post.SetRequestHeader("Content-Type", "application/json");
-            post.SetRequestHeader("Authorization", "Bearer " + apiKey);
-
-            post.SendWebRequest().completed += _ =>
+            PostWithRetry(ApiBase + "/generate", json, apiKey, RetryCount, onError, body =>
             {
-                if (!IsOk(post))
-                {
-                    var message = ExtractError(post);
-                    post.Dispose();
-                    onError(message);
-                    return;
-                }
-
                 GenerateResponse meta = null;
-                try { meta = JsonUtility.FromJson<GenerateResponse>(post.downloadHandler.text); }
+                try { meta = JsonUtility.FromJson<GenerateResponse>(body); }
                 catch { /* handled below */ }
-                post.Dispose();
 
                 if (meta == null || string.IsNullOrEmpty(meta.downloadUrl))
                 {
@@ -115,6 +129,78 @@ namespace UnlockSfx
 
                     onSuccess(meta, bytes);
                 };
+            });
+        }
+
+        /// <summary>
+        /// Generate a variation bank (2–8 clips). On success returns the bank
+        /// metadata plus the downloaded bytes for each clip, aligned to
+        /// meta.clips by index (a clip that failed to download is null). Clips
+        /// are downloaded one at a time to stay gentle on the signed-URL host.
+        /// </summary>
+        public static void GenerateBank(
+            BankRequest request,
+            Action<BankResponse, byte[][]> onSuccess,
+            Action<string> onError)
+        {
+            var apiKey = UnlockSfxSettings.ApiKey;
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                onError("Add your API key first.");
+                return;
+            }
+
+            var json = JsonUtility.ToJson(request);
+            PostWithRetry(ApiBase + "/bank", json, apiKey, RetryCount, onError, body =>
+            {
+                BankResponse meta = null;
+                try { meta = JsonUtility.FromJson<BankResponse>(body); }
+                catch { /* handled below */ }
+
+                if (meta == null || meta.clips == null || meta.clips.Length == 0)
+                {
+                    onError("The server did not return any clips.");
+                    return;
+                }
+
+                var bytes = new byte[meta.clips.Length][];
+                DownloadBankClip(meta, bytes, 0, onSuccess, onError);
+            });
+        }
+
+        // Recursive sequential download: fetch clip `index`, then the next, until
+        // all are done. A single failed clip is left null and we keep going, so a
+        // partial bank still imports rather than throwing the whole batch away.
+        static void DownloadBankClip(
+            BankResponse meta,
+            byte[][] bytes,
+            int index,
+            Action<BankResponse, byte[][]> onSuccess,
+            Action<string> onError)
+        {
+            if (index >= meta.clips.Length)
+            {
+                onSuccess(meta, bytes);
+                return;
+            }
+
+            var url = meta.clips[index].downloadUrl;
+            if (string.IsNullOrEmpty(url))
+            {
+                DownloadBankClip(meta, bytes, index + 1, onSuccess, onError);
+                return;
+            }
+
+            var download = UnityWebRequest.Get(url);
+            download.SendWebRequest().completed += _ =>
+            {
+                if (IsOk(download))
+                {
+                    var data = download.downloadHandler.data;
+                    if (data != null && data.Length > 0) bytes[index] = data;
+                }
+                download.Dispose();
+                DownloadBankClip(meta, bytes, index + 1, onSuccess, onError);
             };
         }
 
@@ -156,9 +242,67 @@ namespace UnlockSfx
             };
         }
 
+        // How many times to automatically retry a failed POST before giving up.
+        // Generation runs on serverless functions, so the first request after an
+        // idle spell can cold-start and time out; a single retry usually self-heals.
+        const int RetryCount = 1;
+
+        // POST `json` to `url`, retrying transient failures up to `retriesLeft` times,
+        // then hand the raw response body to `onBody`. Connection drops / timeouts /
+        // 5xx are retried; real API errors (4xx, e.g. "not enough credits") are not —
+        // those go straight to onError with the server's own message.
+        static void PostWithRetry(
+            string url, string json, string apiKey, int retriesLeft,
+            Action<string> onError, Action<string> onBody)
+        {
+            var post = new UnityWebRequest(url, "POST");
+            post.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+            post.downloadHandler = new DownloadHandlerBuffer();
+            post.SetRequestHeader("Content-Type", "application/json");
+            post.SetRequestHeader("Authorization", "Bearer " + apiKey);
+
+            post.SendWebRequest().completed += _ =>
+            {
+                if (IsOk(post))
+                {
+                    var text = post.downloadHandler.text;
+                    post.Dispose();
+                    onBody(text);
+                    return;
+                }
+
+                var transient = IsTransient(post);
+                var apiMessage = ExtractError(post);
+                post.Dispose();
+
+                if (transient && retriesLeft > 0)
+                {
+                    PostWithRetry(url, json, apiKey, retriesLeft - 1, onError, onBody);
+                    return;
+                }
+
+                onError(transient
+                    ? "Couldn't reach UnlockSFX — the request may have timed out. " +
+                      "The first generation after a while can be slow; please try again."
+                    : apiMessage);
+            };
+        }
+
         static bool IsOk(UnityWebRequest request)
         {
             return request.result == UnityWebRequest.Result.Success;
+        }
+
+        // A failure worth retrying: a dropped/timed-out connection, a response we
+        // couldn't read, no HTTP status at all, or a 5xx server error. A 4xx is the
+        // server deliberately rejecting us (bad key, no credits) — never retry those.
+        static bool IsTransient(UnityWebRequest request)
+        {
+            if (request.result == UnityWebRequest.Result.ConnectionError) return true;
+            if (request.result == UnityWebRequest.Result.DataProcessingError) return true;
+
+            var code = request.responseCode;
+            return code == 0 || code >= 500;
         }
 
         // Surface the API's JSON { "error": "..." } message when present, so users
